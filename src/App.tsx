@@ -16,6 +16,8 @@ import { DatasetBadge } from '@/ui/DatasetBadge';
 import { TOOLS } from '@/ui/plan/tools';
 import { IconButton } from '@/ui/components/controls';
 import { MovementLayer } from '@/ui/plan/MovementLayer';
+import { useAnalysisOverlay } from '@/ui/plan/AnalysisStack';
+import { useRoomChoropleth } from '@/ui/analyze/shared';
 import { Timeline } from '@/ui/Timeline';
 import { usePlayback, clock } from '@/store/playback';
 import { getActiveDataset, useData } from '@/store/dataStore';
@@ -129,9 +131,6 @@ function onAnalysisClick(w: Vec2, _s: Vec2, tolM: number, tool: ToolId): boolean
 
 export default function App() {
   const project = useProject((s) => s.project);
-  const leftOpen = useUI((s) => s.leftOpen);
-  const rightOpen = useUI((s) => s.rightOpen);
-  const mode = useUI((s) => s.mode);
   const dialogs = useUI(useShallow((s) => ({ settings: s.settingsOpen, exp: s.exportOpen, neu: s.newOpen, open: s.openOpen })));
   useKeyboardShortcuts();
   useAutosave();
@@ -142,6 +141,15 @@ export default function App() {
   if (!project) {
     return <div className="flex h-full items-center justify-center text-muted">Loading BSA Flow Explorer…</div>;
   }
+  return <Workspace dialogs={dialogs} />;
+}
+
+function Workspace({ dialogs }: { dialogs: { settings: boolean; exp: boolean; neu: boolean; open: boolean } }) {
+  const leftOpen = useUI((s) => s.leftOpen);
+  const rightOpen = useUI((s) => s.rightOpen);
+  const mode = useUI((s) => s.mode);
+  const overlay = useAnalysisOverlay();
+  const roomFill = useRoomChoropleth();
   const present = mode === 'present';
   return (
     <div className="flex h-full flex-col">
@@ -153,15 +161,18 @@ export default function App() {
             dynamicLayers={
               <>
                 <GridLayer />
+                {overlay.layersEl}
                 {mode !== 'plan' && <MovementLayer />}
               </>
             }
             onAnalysisClick={onAnalysisClick}
+            roomFill={mode === 'plan' ? null : roomFill}
             hud={
               <>
                 <ToolPalette />
                 <ZoomControls />
                 <ScaleBar />
+                {overlay.legends}
                 <div className="pointer-events-none absolute top-3 right-3 z-10">
                   <DatasetBadge />
                 </div>

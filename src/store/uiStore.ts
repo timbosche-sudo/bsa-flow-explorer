@@ -51,7 +51,8 @@ export interface LayerState {
 
 export type HeatmapMetric = 'presence' | 'movement' | 'frequency' | 'encounters';
 export type Normalization = 'absolute' | 'relative' | 'per-staff-hour';
-export type Gradient = 'warm' | 'viridis' | 'mono';
+export type Gradient = 'warm' | 'blue' | 'mono';
+export type RoomMetric = 'dwell' | 'visits' | 'presence' | 'peak' | 'avgVisit';
 
 export type AnalysisView = 'overview' | 'rooms' | 'heatmap' | 'congestion' | 'od' | 'time' | 'compare';
 export type ShapeMode = 'polygon' | 'rect';
@@ -86,7 +87,13 @@ interface UIState {
     gradient: Gradient;
     normalization: Normalization;
     cellM: number;
+    /** Animate as a rolling window ending at the playback time. */
+    rolling: boolean;
+    rollingMinutes: number;
   };
+  roomMetric: RoomMetric;
+  choropleth: boolean;
+  compare: { mode: 'roles' | 'periods' | 'datasets'; bStart: number; bEnd: number; bDataset: string | null; diffMap: boolean };
   analysisView: AnalysisView;
   congestionThreshold: number;
   odHighlight: { fromType: string; toType: string } | null;
@@ -112,6 +119,9 @@ interface UIState {
   setMarkers: (patch: Partial<UIState['markers']>) => void;
   setHeatmap: (patch: Partial<UIState['heatmap']>) => void;
   setAnalysisView: (v: AnalysisView) => void;
+  setRoomMetric: (m: RoomMetric) => void;
+  setChoropleth: (on: boolean) => void;
+  setCompare: (patch: Partial<UIState['compare']>) => void;
   setCongestionThreshold: (n: number) => void;
   setOdHighlight: (h: UIState['odHighlight']) => void;
   setDialog: (k: DialogKey, open: boolean) => void;
@@ -157,7 +167,10 @@ export const useUI = create<UIState>((set, get) => ({
   staffFilter: [],
   trails: { mode: 'tail', tailMinutes: 4, width: 2, opacity: 0.8, arrows: false, fade: true, showLabels: false },
   markers: { labels: true, direction: true, destination: false },
-  heatmap: { metric: 'movement', intensity: 1, smoothingM: 0.6, gradient: 'warm', normalization: 'relative', cellM: 0.25 },
+  heatmap: { metric: 'movement', intensity: 1, smoothingM: 0.6, gradient: 'warm', normalization: 'relative', cellM: 0.25, rolling: false, rollingMinutes: 30 },
+  roomMetric: 'dwell',
+  choropleth: false,
+  compare: { mode: 'roles', bStart: 12 * 3600, bEnd: 16 * 3600, bDataset: null, diffMap: false },
   analysisView: 'overview',
   congestionThreshold: 3,
   odHighlight: null,
@@ -191,6 +204,9 @@ export const useUI = create<UIState>((set, get) => ({
   setMarkers: (patch) => set({ markers: { ...get().markers, ...patch } }),
   setHeatmap: (patch) => set({ heatmap: { ...get().heatmap, ...patch } }),
   setAnalysisView: (analysisView) => set({ analysisView }),
+  setRoomMetric: (roomMetric) => set({ roomMetric }),
+  setChoropleth: (choropleth) => set({ choropleth }),
+  setCompare: (patch) => set({ compare: { ...get().compare, ...patch } }),
   setCongestionThreshold: (congestionThreshold) => set({ congestionThreshold }),
   setOdHighlight: (odHighlight) => set({ odHighlight }),
   setDialog: (k, open) => set({ [k]: open } as Partial<UIState>),

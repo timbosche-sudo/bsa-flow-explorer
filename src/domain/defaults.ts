@@ -41,7 +41,7 @@ export function defaultRoomTypes(): RoomTypeDef[] {
 }
 
 /** Distinguishable, restrained role palette (colour-blind aware ordering). */
-export const ROLE_PALETTE = ['#2f6f9f', '#d07a2d', '#4f8f5b', '#8a5aa8', '#c0443c', '#2a9d9a', '#9c7a2b', '#6b6f76'];
+export const ROLE_PALETTE = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'];
 
 const tri = (min: number, mode: number, max: number) => ({ min, mode, max });
 

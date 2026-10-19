@@ -55,7 +55,10 @@ export function FloorPlanView({ dynamicLayers, hud, roomFill, onAnalysisClick }:
     const el = host.current!;
     const ro = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
-      useView.getState().setSize(r.width, r.height);
+      const v = useView.getState();
+      // Keep the plan centred when panels open/close.
+      if (v.width > 0 && fitted.current === project.meta.id) v.setView({ tx: v.tx + (r.width - v.width) / 2, ty: v.ty + (r.height - v.height) / 2 });
+      v.setSize(r.width, r.height);
       if (fitted.current !== project.meta.id && r.width > 0) {
         fitted.current = project.meta.id;
         fitToPlan();
