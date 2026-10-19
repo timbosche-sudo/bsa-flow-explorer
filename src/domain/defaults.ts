@@ -4,7 +4,7 @@ import { DEFAULT_ROOM_TYPES } from './types';
 let counter = 0;
 /** Locally unique id. Uses crypto.randomUUID when available. */
 export function uid(prefix = 'id'): string {
-  const c = globalThis.crypto as Crypto | undefined;
+  const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
   if (c?.randomUUID) return `${prefix}-${c.randomUUID().slice(0, 8)}`;
   counter += 1;
   return `${prefix}-${Date.now().toString(36)}-${counter}`;
