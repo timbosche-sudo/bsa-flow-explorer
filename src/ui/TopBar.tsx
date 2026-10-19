@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Download, FilePlus2, FileUp, FolderOpen, Redo2, Save, Settings, Undo2 } from 'lucide-react';
+import { DatabaseZap, Download, FilePlus2, FileUp, FolderOpen, Redo2, Save, Settings, Undo2 } from 'lucide-react';
 import { useProject } from '@/store/projectStore';
 import { useUI, type AppMode } from '@/store/uiStore';
 import { IconButton, cx } from './components/controls';
@@ -121,6 +121,9 @@ export function TopBar() {
         </IconButton>
         <IconButton title="Import floor plan PDF" onClick={() => fileRef.current?.click()}>
           <FileUp size={16} />
+        </IconButton>
+        <IconButton title="Import tracking data (CSV / JSON)" onClick={() => setDialog('importOpen', true)}>
+          <DatabaseZap size={16} />
         </IconButton>
         <IconButton title="Export" onClick={() => setDialog('exportOpen', true)}>
           <Download size={16} />

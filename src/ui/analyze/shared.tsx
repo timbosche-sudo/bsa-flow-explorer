@@ -86,10 +86,14 @@ export function ChoroplethLegend() {
   );
 }
 
+export const UNASSIGNED_ROLE = { id: '__unassigned', name: 'Unassigned role', shortName: 'Unassigned', color: '#898781' };
+
 export function roleRows(a: DatasetAnalysis, roles: { id: string; name: string; shortName: string; color: string }[]) {
-  return roles
+  const all = a.staff.some((s) => !s.roleId || !roles.some((r) => r.id === s.roleId)) ? [...roles, UNASSIGNED_ROLE] : roles;
+  const known = new Set(roles.map((r) => r.id));
+  return all
     .map((r) => {
-      const st = a.staff.filter((s) => s.roleId === r.id);
+      const st = a.staff.filter((s) => (r.id === UNASSIGNED_ROLE.id ? !s.roleId || !known.has(s.roleId) : s.roleId === r.id));
       const n = st.length;
       const trackedH = st.reduce((s, x) => s + x.trackedS, 0) / 3600;
       const dist = st.reduce((s, x) => s + x.distanceM, 0);

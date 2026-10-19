@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsa.example/flow-explorer/position-observation.schema.json",
+  "title": "BSA Flow Explorer position observation",
+  "description": "One calibrated tag position. Coordinates are in a named building-space reference frame, not screen pixels.",
+  "type": "object",
+  "required": ["studyId", "tagId", "timestampUtc", "x", "y", "frameId", "source"],
+  "properties": {
+    "studyId": { "type": "string" },
+    "tagId": { "type": "string", "description": "Pseudonymous tag identifier. Never an employee name." },
+    "timestampUtc": { "type": "string", "format": "date-time", "description": "ISO 8601 in UTC, e.g. 2025-03-12T14:00:02.250Z" },
+    "x": { "type": "number", "description": "Meters in frameId" },
+    "y": { "type": "number", "description": "Meters in frameId" },
+    "z": { "type": ["number", "null"] },
+    "frameId": { "type": "string" },
+    "source": { "type": "string", "examples": ["uwb-twr", "uwb-tdoa", "manual", "synthetic-test"] },
+    "quality": { "type": ["number", "null"], "description": "0..1 or vendor-specific quality indicator" },
+    "uncertaintyM": { "type": ["number", "null"], "description": "Estimated 1-sigma horizontal uncertainty in meters" },
+    "diagnostics": { "type": "object", "additionalProperties": true }
+  }
+}

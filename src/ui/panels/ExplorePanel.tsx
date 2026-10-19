@@ -1,10 +1,13 @@
-import { useMemo } from 'react';
-import { Database, Route, UserRound, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Database, Route, Trash2, Upload, UserRound, Users } from 'lucide-react';
+import { usePlayback } from '@/store/playback';
+import { activateObserved } from '@/ui/dialogs/ImportWizard';
+import { deleteDataset } from '@/services/persistence';
 import { useProject } from '@/store/projectStore';
 import { useUI } from '@/store/uiStore';
 import { isSimulationStale, useActiveDataset, useData } from '@/store/dataStore';
 import { useAnalysis } from '@/store/analysis';
-import { Badge, Section, Segmented, Select, Slider, Toggle, cx } from '@/ui/components/controls';
+import { Badge, Button, Section, Segmented, Select, Slider, Toggle, cx } from '@/ui/components/controls';
 import { fmtDistance } from '@/ui/format';
 import { LayersSection, useSectionState } from './PlanPanels';
 import { RunSimulationButton } from './ConfigurePanel';
@@ -21,24 +24,36 @@ export function ExplorePanel() {
   );
 }
 
+export function selectDataset(id: string) {
+  const d = useData.getState();
+  if (id === 'simulation') {
+    d.setActive('simulation');
+    const p = useProject.getState().project!;
+    usePlayback.getState().setStudy(p.simulation.studyStartMin * 60, p.simulation.studyEndMin * 60);
+  } else if (d.observed[id]) activateObserved(d.observed[id]);
+}
+
 export function DatasetSection({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const ds = useActiveDataset();
   const activeId = useData((s) => s.activeId);
   const observed = useData((s) => s.observed);
   const sim = useData((s) => s.simulation);
   const project = useProject((s) => s.project!);
+  const [showProv, setShowProv] = useState(false);
   const stale = isSimulationStale(project, sim);
   const opts = [
     { value: 'simulation', label: sim ? `Simulation · seed ${sim.meta.id.replace('sim-', '')}` : 'Simulation (not run)' },
-    ...Object.values(observed).map((o) => ({ value: o.meta.id, label: `Observed · ${o.meta.name}` })),
+    ...Object.values(observed).map((o) => ({ value: o.meta.id, label: `${o.meta.synthetic ? 'Synthetic test' : 'Observed'} · ${o.meta.name}` })),
   ];
+  const obs = activeId !== 'simulation' ? observed[activeId] : null;
   return (
     <Section title="Dataset" icon={<Database size={13} />} open={open} onToggle={onToggle}>
-      <Select value={activeId} onChange={(v) => useData.getState().setActive(v)} options={opts} />
+      <Select value={activeId} onChange={selectDataset} options={opts} />
       <div className="mt-2 text-2xs leading-relaxed text-muted">
         {ds ? (
           <>
-            <Badge tone={ds.meta.kind === 'simulated' ? 'sim' : 'obs'}>{ds.meta.kind}</Badge> {ds.tracks.length} tracks · {ds.meta.source}
+            <Badge tone={ds.meta.kind === 'simulated' || ds.meta.synthetic ? 'sim' : 'obs'}>{ds.meta.synthetic ? 'synthetic' : ds.meta.kind}</Badge> {ds.tracks.length} tracks · {ds.meta.source}
+            {ds.meta.kind === 'observed' && <> · accuracy {ds.meta.positionAccuracyM == null ? 'unknown' : `≈${ds.meta.positionAccuracyM} m`}</>}
           </>
         ) : (
           'No movement data loaded.'
@@ -50,6 +65,43 @@ export function DatasetSection({ open, onToggle }: { open: boolean; onToggle: ()
           <RunSimulationButton className="w-full" />
         </div>
       )}
+      {obs && (
+        <div className="mt-2 space-y-1.5">
+          <div className="flex gap-1.5">
+            <Button size="sm" onClick={() => setShowProv(!showProv)}>
+              {showProv ? 'Hide' : 'Show'} provenance
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              icon={<Trash2 size={12} />}
+              onClick={async () => {
+                if (!confirm(`Delete dataset “${obs.meta.name}” (raw and cleaned observations) from this device?`)) return;
+                await deleteDataset(obs.meta.id);
+                useData.getState().removeObserved(obs.meta.id);
+                useProject.getState().setObservedDatasetIds(project.observedDatasetIds.filter((x) => x !== obs.meta.id));
+                selectDataset('simulation');
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+          {showProv && (
+            <div className="space-y-1 rounded-[3px] border border-line-2 bg-paper p-2 text-[10.5px] leading-snug text-ink-2">
+              {obs.meta.provenance.map((p, i) => (
+                <div key={i}>
+                  <b>{p.action}</b> · {new Date(p.date).toLocaleString()}
+                  <div className="text-muted">{p.detail}</div>
+                </div>
+              ))}
+              <div className="text-muted">Raw observations: {obs.rawTracks.reduce((s, t) => s + t.t.length, 0).toLocaleString()} · cleaned: {obs.cleanTracks.reduce((s, t) => s + t.t.length, 0).toLocaleString()}</div>
+            </div>
+          )}
+        </div>
+      )}
+      <Button size="sm" className="mt-2 w-full" icon={<Upload size={12} />} onClick={() => useUI.getState().setDialog('importOpen', true)}>
+        Import tracking data…
+      </Button>
     </Section>
   );
 }

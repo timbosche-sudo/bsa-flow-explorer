@@ -1,7 +1,7 @@
 /** Plain-language metric definitions shown alongside analytics. */
 export const METRIC_DEFINITIONS: Record<string, string> = {
   distance:
-    'Sum of straight-line distances between consecutive position samples inside the analysis window. Segments across tracking gaps are excluded (reported separately as an estimated lower bound).',
+    'Sum of straight-line distances between consecutive position samples while moving (≥ 0.3 m/s) inside the analysis window. Sub-threshold displacement is treated as positioning noise. Segments across tracking gaps are excluded (reported separately as an estimated lower bound).',
   trip: 'Movement between two consecutive room visits, from departure (start of the last continuous movement in the origin room) to arrival (first stop in the destination room).',
   visit: 'A continuous stay in a room (not circulation) of at least 20 seconds. Briefer passes are treated as pass-throughs.',
   dwell: 'Total time of all visits to a room by tracked staff.',

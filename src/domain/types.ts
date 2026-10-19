@@ -313,6 +313,10 @@ export interface DatasetMeta {
   provenance: ProvenanceStep[];
   /** Approximate positional accuracy (m) if known; null = unknown. */
   positionAccuracyM: number | null;
+  /** Imported file is synthetic/test data rather than a field recording. */
+  synthetic?: boolean;
+  /** Study-site offset from UTC used to convert timestamps (minutes). */
+  utcOffsetMin?: number;
 }
 
 /** Ground-truth activity log produced only by the simulation engine. */

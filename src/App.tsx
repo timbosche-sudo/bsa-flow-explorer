@@ -12,10 +12,12 @@ import { FloorPlanView, viewCommands } from '@/ui/plan/FloorPlanView';
 import { GridLayer, ScaleBar, ToolPalette, ZoomControls } from '@/ui/plan/Hud';
 import { NewProjectDialog, OpenProjectDialog, SettingsDialog } from '@/ui/dialogs/ProjectDialogs';
 import { ExportDialog } from '@/ui/dialogs/ExportDialog';
+import { ImportWizard } from '@/ui/dialogs/ImportWizard';
 import { DatasetBadge } from '@/ui/DatasetBadge';
 import { TOOLS } from '@/ui/plan/tools';
 import { IconButton } from '@/ui/components/controls';
 import { MovementLayer } from '@/ui/plan/MovementLayer';
+import { AnchorLayer } from '@/ui/plan/AnchorLayer';
 import { useAnalysisOverlay } from '@/ui/plan/AnalysisStack';
 import { useRoomChoropleth } from '@/ui/analyze/shared';
 import { Timeline } from '@/ui/Timeline';
@@ -131,7 +133,7 @@ function onAnalysisClick(w: Vec2, _s: Vec2, tolM: number, tool: ToolId): boolean
 
 export default function App() {
   const project = useProject((s) => s.project);
-  const dialogs = useUI(useShallow((s) => ({ settings: s.settingsOpen, exp: s.exportOpen, neu: s.newOpen, open: s.openOpen })));
+  const dialogs = useUI(useShallow((s) => ({ settings: s.settingsOpen, exp: s.exportOpen, neu: s.newOpen, open: s.openOpen, imp: s.importOpen })));
   useKeyboardShortcuts();
   useAutosave();
   useEffect(() => {
@@ -144,7 +146,7 @@ export default function App() {
   return <Workspace dialogs={dialogs} />;
 }
 
-function Workspace({ dialogs }: { dialogs: { settings: boolean; exp: boolean; neu: boolean; open: boolean } }) {
+function Workspace({ dialogs }: { dialogs: { settings: boolean; exp: boolean; neu: boolean; open: boolean; imp: boolean } }) {
   const leftOpen = useUI((s) => s.leftOpen);
   const rightOpen = useUI((s) => s.rightOpen);
   const mode = useUI((s) => s.mode);
@@ -162,6 +164,7 @@ function Workspace({ dialogs }: { dialogs: { settings: boolean; exp: boolean; ne
               <>
                 <GridLayer />
                 {overlay.layersEl}
+                {mode === 'plan' && <AnchorLayer />}
                 {mode !== 'plan' && <MovementLayer />}
               </>
             }
@@ -198,6 +201,7 @@ function Workspace({ dialogs }: { dialogs: { settings: boolean; exp: boolean; ne
       {dialogs.exp && <ExportDialog />}
       {dialogs.neu && <NewProjectDialog />}
       {dialogs.open && <OpenProjectDialog />}
+      {dialogs.imp && <ImportWizard />}
     </div>
   );
 }

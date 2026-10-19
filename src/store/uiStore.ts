@@ -92,6 +92,8 @@ interface UIState {
     rollingMinutes: number;
   };
   roomMetric: RoomMetric;
+  anchorPlan: { show: boolean; radiusM: number; minAnchors: number };
+  setAnchorPlan: (patch: Partial<UIState['anchorPlan']>) => void;
   choropleth: boolean;
   compare: { mode: 'roles' | 'periods' | 'datasets'; bStart: number; bEnd: number; bDataset: string | null; diffMap: boolean };
   analysisView: AnalysisView;
@@ -169,6 +171,8 @@ export const useUI = create<UIState>((set, get) => ({
   markers: { labels: true, direction: true, destination: false },
   heatmap: { metric: 'movement', intensity: 1, smoothingM: 0.6, gradient: 'warm', normalization: 'relative', cellM: 0.25, rolling: false, rollingMinutes: 30 },
   roomMetric: 'dwell',
+  anchorPlan: { show: false, radiusM: 12, minAnchors: 3 },
+  setAnchorPlan: (patch) => set({ anchorPlan: { ...get().anchorPlan, ...patch } }),
   choropleth: false,
   compare: { mode: 'roles', bStart: 12 * 3600, bEnd: 16 * 3600, bDataset: null, diffMap: false },
   analysisView: 'overview',

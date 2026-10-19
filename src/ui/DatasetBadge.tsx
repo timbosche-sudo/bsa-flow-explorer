@@ -22,9 +22,11 @@ export function DatasetBadge({ compact, className }: { compact?: boolean; classN
     );
   }
   return (
-    <span className={cx('inline-flex items-center gap-1.5 rounded-[2px] bg-obs-bg px-2 py-1 text-[10.5px] font-semibold tracking-[0.06em] text-obs uppercase', className)} title={ds.meta.source}>
+    <span className={cx('inline-flex min-w-0 items-center gap-1.5 rounded-[2px] px-2 py-1 text-[10.5px] font-semibold tracking-[0.06em] uppercase', ds.meta.synthetic ? 'bg-sim-bg text-sim' : 'bg-obs-bg text-obs', className)} title={ds.meta.source}>
       <Radio size={12} />
-      Observed data · {ds.meta.name}
+      <span className={cx('truncate', compact && 'max-w-[220px]')}>
+        {ds.meta.synthetic ? (compact ? 'Synthetic test data' : 'Imported synthetic test data') : 'Observed data'} · {ds.meta.name}
+      </span>
     </span>
   );
 }

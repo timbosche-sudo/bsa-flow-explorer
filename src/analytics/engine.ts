@@ -279,10 +279,9 @@ export function analyzeTrack(tr: Track, locator: SpaceLocator, o: Omit<AnalysisO
       res.hourlyDistanceM[h] += d;
       res.hourlyMovingS[h] += dt;
     } else {
+      // Below the movement threshold: treated as stationary. Displacement here
+      // is dominated by positioning noise, so it is not counted as distance.
       res.stationaryS += dt;
-      // Small in-place repositioning still counts toward distance walked.
-      res.distanceM += d;
-      res.hourlyDistanceM[h] += d;
     }
   }
 
@@ -335,7 +334,7 @@ export function analyzeTrack(tr: Track, locator: SpaceLocator, o: Omit<AnalysisO
         hasGap = true;
         continue;
       }
-      dist += Math.hypot(tr.x[i] - tr.x[i - 1], tr.y[i] - tr.y[i - 1]);
+      if (moving(i)) dist += Math.hypot(tr.x[i] - tr.x[i - 1], tr.y[i] - tr.y[i - 1]);
     }
     res.trips.push({ staffId: tr.staffId, roleId: tr.roleId, fromRoomId: a.roomId, toRoomId: b.roomId, start: tr.t[dep], end: tr.t[arr], distanceM: dist, hasGap });
   }
@@ -354,9 +353,10 @@ export function distanceUntil(tr: Track, t: number, maxGapS = 30): { distanceM: 
     if (tr.gap[i] || full > maxGapS) continue;
     const f = full > 0 ? (t1 - tr.t[i - 1]) / full : 0;
     const d = Math.hypot(tr.x[i] - tr.x[i - 1], tr.y[i] - tr.y[i - 1]);
-    distanceM += d * f;
-    if (full > 0 && d / full >= 0.3) movingS += t1 - tr.t[i - 1];
-    else stationaryS += t1 - tr.t[i - 1];
+    if (full > 0 && d / full >= 0.3) {
+      distanceM += d * f;
+      movingS += t1 - tr.t[i - 1];
+    } else stationaryS += t1 - tr.t[i - 1];
   }
   return { distanceM, movingS, stationaryS };
 }

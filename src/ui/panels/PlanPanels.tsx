@@ -268,10 +268,13 @@ export function SpatialSection({ open, onToggle }: { open: boolean; onToggle: ()
         </div>
       )}
       {tab === 'anchors' && (
-        <div className="max-h-[260px] overflow-auto rounded-[3px] border border-line-2 bg-paper">
-          {s.anchors.map((a) => row(a.id, selection?.id === a.id, () => pick('anchor', a.id), a.label, a.status))}
-          {!s.anchors.length && <div className="p-3 text-center text-2xs text-muted">Place planned UWB anchors with the anchor tool.</div>}
-        </div>
+        <>
+          <div className="max-h-[200px] overflow-auto rounded-[3px] border border-line-2 bg-paper">
+            {s.anchors.map((a) => row(a.id, selection?.id === a.id, () => pick('anchor', a.id), a.label, a.status))}
+            {!s.anchors.length && <div className="p-3 text-center text-2xs text-muted">Place planned UWB anchors with the anchor tool.</div>}
+          </div>
+          <AnchorPlanControls />
+        </>
       )}
       {tab === 'zones' && <ZonesEditor />}
       {tab === 'types' && <RoomTypesEditor preview={ROOM_TYPE_PREVIEW} />}
@@ -415,6 +418,31 @@ export function ValidationList({ max = 50 }: { max?: number }) {
         </button>
       ))}
       {issues.length > max && <div className="text-2xs text-muted">+ {issues.length - max} more</div>}
+    </div>
+  );
+}
+
+function AnchorPlanControls() {
+  const plan = useUI((s) => s.anchorPlan);
+  const set = useUI((s) => s.setAnchorPlan);
+  const setLayer = useUI((s) => s.setLayer);
+  return (
+    <div className="mt-2 space-y-1">
+      <Toggle
+        label="Show anchor distribution"
+        checked={plan.show}
+        onChange={(show) => {
+          set({ show });
+          if (show) setLayer('anchors', { visible: true });
+        }}
+      />
+      {plan.show && (
+        <>
+          <Slider label="Planning radius" min={4} max={30} step={1} value={plan.radiusM} onChange={(radiusM) => set({ radiusM })} format={(v) => `${v} m`} />
+          <Slider label="Desired anchors in range" min={2} max={6} step={1} value={plan.minAnchors} onChange={(minAnchors) => set({ minAnchors })} format={(v) => String(v)} />
+        </>
+      )}
+      <p className="text-2xs leading-relaxed text-muted">A geometric planning aid only. It does not represent verified radio coverage; confirm with on-site survey and calibration recordings.</p>
     </div>
   );
 }

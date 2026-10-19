@@ -13,7 +13,7 @@ import { buildOD, odKey } from '@/analytics/od';
 import { rampRGB, rgbStr } from '@/ui/colormaps';
 import { FT_PER_M } from '@/geometry/calibration';
 import { area } from '@/geometry/polygon';
-import { Definition, ROOM_METRICS, SectionTitle, roleRows, useBasis } from './shared';
+import { Definition, ROOM_METRICS, SectionTitle, UNASSIGNED_ROLE, roleRows, useBasis } from './shared';
 import { useCompareSides } from '@/ui/plan/useDiffHeat';
 import { useSpatialContext } from '@/store/derived';
 
@@ -73,7 +73,7 @@ export function OverviewView() {
   for (let h = Math.floor(a.options.range[0] / 3600); h < Math.ceil(a.options.range[1] / 3600); h++) hours.push(h);
   const hourly = hours.map((h) => {
     const o: Record<string, number> = { h };
-    for (const r of rows) o[r.role.id] = toU(a.staff.filter((s) => s.roleId === r.role.id).reduce((q, s) => q + s.hourlyDistanceM[h % 24], 0));
+    for (const r of rows) o[r.role.id] = toU(a.staff.filter((s) => (r.role.id === UNASSIGNED_ROLE.id ? !s.roleId : s.roleId === r.role.id)).reduce((q, s) => q + s.hourlyDistanceM[h % 24], 0));
     return o;
   });
   return (
@@ -519,7 +519,7 @@ export function TimeView() {
   for (let h = h0; h < h1; h++) {
     const o: Record<string, number> = { h };
     for (const r of rows) {
-      const st = a.staff.filter((s) => s.roleId === r.role.id);
+      const st = a.staff.filter((s) => (r.role.id === UNASSIGNED_ROLE.id ? !s.roleId : s.roleId === r.role.id));
       o[r.role.id] = st.length ? toU(st.reduce((q, s) => q + s.hourlyDistanceM[h % 24], 0) / st.length) : 0;
     }
     hourly.push(o);

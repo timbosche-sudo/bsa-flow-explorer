@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsa.example/flow-explorer/range-observation.schema.json",
+  "title": "BSA Flow Explorer raw UWB range observation",
+  "description": "A raw anchor-to-tag distance measurement. This is NOT a position; a positioning engine must combine ranges with surveyed anchor coordinates.",
+  "type": "object",
+  "required": ["studyId", "tagId", "anchorId", "timestampUtc", "rangeM"],
+  "properties": {
+    "studyId": { "type": "string" },
+    "tagId": { "type": "string" },
+    "anchorId": { "type": "string", "description": "Matches an anchor id or label in the project" },
+    "timestampUtc": { "type": "string", "format": "date-time" },
+    "rangeM": { "type": "number", "minimum": 0 },
+    "rssiDbm": { "type": ["number", "null"] },
+    "firstPathDbm": { "type": ["number", "null"] },
+    "quality": { "type": ["number", "null"] }
+  }
+}
