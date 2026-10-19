@@ -20,7 +20,7 @@ export type ToolId =
   | 'select-staff'
   | 'inspect';
 
-export type SelectionKind = 'room' | 'door' | 'circulation' | 'obstacle' | 'anchor' | 'zone' | 'staff' | 'role' | 'trip' | 'od';
+export type SelectionKind = 'room' | 'door' | 'circulation' | 'obstacle' | 'anchor' | 'zone' | 'staff' | 'role' | 'trip' | 'od' | 'sample';
 
 export interface Selection {
   kind: SelectionKind;

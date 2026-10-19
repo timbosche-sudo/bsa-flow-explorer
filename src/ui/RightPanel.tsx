@@ -5,6 +5,9 @@ import { useProject } from '@/store/projectStore';
 import { fmtArea } from './format';
 import { area } from '@/geometry/polygon';
 import { Stat } from './components/controls';
+import { StaffInspector } from './panels/StaffInspector';
+import { StudySummary } from './panels/StudySummary';
+import { SampleInspector } from './panels/SampleInspector';
 
 function PlanSummary() {
   const p = useProject((s) => s.project!);
@@ -31,12 +34,15 @@ export function RightPanel() {
   const mode = useUI((s) => s.mode);
   const selection = useUI((s) => s.selection);
   const spatialSel = selection && ['room', 'door', 'circulation', 'obstacle', 'anchor'].includes(selection.kind);
+  let body: React.ReactNode;
+  if (mode === 'plan') body = spatialSel ? <SpatialInspector /> : <PlanSummary />;
+  else if (selection?.kind === 'staff') body = <StaffInspector staffId={selection.id} />;
+  else if (selection?.kind === 'sample') body = <SampleInspector id={selection.id} />;
+  else if (spatialSel && mode === 'configure') body = <SpatialInspector />;
+  else body = <StudySummary />;
   return (
     <aside className="flex w-[340px] shrink-0 flex-col overflow-hidden border-l border-line bg-panel">
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        {mode === 'plan' && (spatialSel ? <SpatialInspector /> : <PlanSummary />)}
-        {mode !== 'plan' && (spatialSel ? <SpatialInspector /> : <PlanSummary />)}
-      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">{body}</div>
     </aside>
   );
 }

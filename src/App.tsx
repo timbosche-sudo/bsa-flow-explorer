@@ -15,6 +15,13 @@ import { ExportDialog } from '@/ui/dialogs/ExportDialog';
 import { DatasetBadge } from '@/ui/DatasetBadge';
 import { TOOLS } from '@/ui/plan/tools';
 import { IconButton } from '@/ui/components/controls';
+import { MovementLayer } from '@/ui/plan/MovementLayer';
+import { Timeline } from '@/ui/Timeline';
+import { usePlayback, clock } from '@/store/playback';
+import { getActiveDataset, useData } from '@/store/dataStore';
+import { positionAt, indexAtOrBefore } from '@/analytics/trackUtils';
+import type { Vec2 } from '@/domain/types';
+import type { ToolId } from '@/store/uiStore';
 
 function useKeyboardShortcuts() {
   useEffect(() => {
@@ -39,6 +46,12 @@ function useKeyboardShortcuts() {
         return;
       }
       if (mod || e.altKey) return;
+      if (e.code === 'Space' && ui.mode !== 'plan') {
+        e.preventDefault();
+        const pb = usePlayback.getState();
+        pb.setPlaying(!pb.playing);
+        return;
+      }
       if (/^[1-5]$/.test(e.key)) {
         ui.setMode((['plan', 'configure', 'explore', 'analyze', 'present'] as const)[Number(e.key) - 1]);
         return;
@@ -81,6 +94,39 @@ function useAutosave() {
   }, []);
 }
 
+/** Click handling for analysis tools: pick staff markers or inspect recorded samples. */
+function onAnalysisClick(w: Vec2, _s: Vec2, tolM: number, tool: ToolId): boolean {
+  const ds = getActiveDataset(useData.getState());
+  const ui = useUI.getState();
+  if (!ds) return false;
+  if (tool === 'select-staff') {
+    let best: { id: string; d: number } | null = null;
+    for (const tr of ds.tracks) {
+      const p = positionAt(tr, clock.t);
+      if (!p) continue;
+      const d = Math.hypot(p.p.x - w.x, p.p.y - w.y);
+      if (d < tolM * 1.4 && (!best || d < best.d)) best = { id: tr.staffId, d };
+    }
+    ui.select(best ? { kind: 'staff', id: best.id } : null);
+    return true;
+  }
+  if (tool === 'inspect') {
+    const { rangeStart, rangeEnd } = usePlayback.getState();
+    let best: { id: string; i: number; d: number } | null = null;
+    for (const tr of ds.tracks) {
+      const a = Math.max(0, indexAtOrBefore(tr.t, rangeStart));
+      const b = indexAtOrBefore(tr.t, rangeEnd);
+      for (let i = a; i <= b; i++) {
+        const d = Math.hypot(tr.x[i] - w.x, tr.y[i] - w.y);
+        if (d < tolM && (!best || d < best.d || (Math.abs(d - best.d) < 1e-6 && Math.abs(tr.t[i] - clock.t) < Math.abs(tr.t[best.i] - clock.t)))) best = { id: tr.staffId, i, d };
+      }
+    }
+    ui.select(best ? { kind: 'sample', id: `${best.id}#${best.i}` } : null);
+    return true;
+  }
+  return false;
+}
+
 export default function App() {
   const project = useProject((s) => s.project);
   const leftOpen = useUI((s) => s.leftOpen);
@@ -104,7 +150,13 @@ export default function App() {
         {leftOpen && !present && <LeftPanel />}
         <main className="relative min-w-0 flex-1">
           <FloorPlanView
-            dynamicLayers={<GridLayer />}
+            dynamicLayers={
+              <>
+                <GridLayer />
+                {mode !== 'plan' && <MovementLayer />}
+              </>
+            }
+            onAnalysisClick={onAnalysisClick}
             hud={
               <>
                 <ToolPalette />
@@ -129,6 +181,7 @@ export default function App() {
         </main>
         {rightOpen && !present && <RightPanel />}
       </div>
+      {mode !== 'plan' && <Timeline />}
       <Toast />
       {dialogs.settings && <SettingsDialog />}
       {dialogs.exp && <ExportDialog />}
