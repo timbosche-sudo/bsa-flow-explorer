@@ -48,7 +48,7 @@ export function OverlayLayer({ draft, snap }: { draft: Draft; snap: Vec2 | null 
   const hoverPoly =
     hover && hover.kind === 'room' ? rooms.find((r) => r.id === hover.id)?.polygon : hover?.kind === 'circulation' ? circulation.find((c) => c.id === hover.id)?.polygon : null;
   const showHandles = tool === 'edit-polygon' && selPoly;
-  const showDoors = layers.doors.visible && (mode === 'plan' || view.scale > 14);
+  const showDoors = layers.doors.visible && mode !== 'present' && (mode === 'plan' || view.scale > 14);
 
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full select-none">

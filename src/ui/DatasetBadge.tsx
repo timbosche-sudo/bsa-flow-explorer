@@ -15,9 +15,9 @@ export function DatasetBadge({ compact, className }: { compact?: boolean; classN
   }
   if (ds.meta.kind === 'simulated') {
     return (
-      <span className={cx('inline-flex items-center gap-1.5 rounded-[2px] bg-sim-bg px-2 py-1 text-[10.5px] font-semibold tracking-[0.06em] text-sim uppercase', className)} title={ds.meta.source}>
+      <span className={cx('inline-flex items-center gap-1.5 rounded-[2px] whitespace-nowrap bg-sim-bg px-2 py-1 text-[10.5px] font-semibold tracking-[0.06em] text-sim uppercase', className)} title={ds.meta.source}>
         <FlaskConical size={12} />
-        {compact ? 'Simulated data — demo only' : 'Simulated data — demonstration only'}
+        {compact ? 'Simulated data' : 'Simulated data — demonstration only'}
       </span>
     );
   }

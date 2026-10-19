@@ -60,8 +60,8 @@ export function TopBar() {
       <div className="flex items-center gap-2 pr-1">
         <BrandMark />
         <div className="leading-none">
-          <div className="text-[13px] font-semibold tracking-[0.01em]">BSA Flow Explorer</div>
-          <div className="mt-[2px] text-[10px] tracking-[0.08em] text-faint uppercase">Clinical movement analysis</div>
+          <div className="text-[13px] font-semibold tracking-[0.01em] whitespace-nowrap">BSA Flow Explorer</div>
+          <div className="mt-[2px] hidden text-[10px] tracking-[0.08em] whitespace-nowrap text-faint uppercase 2xl:block">Clinical movement analysis</div>
         </div>
       </div>
       <div className="h-6 w-px bg-line" />
@@ -78,11 +78,11 @@ export function TopBar() {
             onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
           />
         ) : (
-          <button className="truncate text-[13px] font-medium text-ink-2 hover:text-ink" title="Rename project" onClick={() => setEditing(true)}>
+          <button className="max-w-[220px] truncate text-[13px] font-medium text-ink-2 hover:text-ink" title="Rename project" onClick={() => setEditing(true)}>
             {project.meta.name}
           </button>
         )}
-        <span className={cx('text-2xs', dirty ? 'text-warn' : 'text-faint')}>{dirty ? 'Unsaved changes' : 'Saved locally'}</span>
+        <span className={cx('hidden text-2xs whitespace-nowrap xl:inline', dirty ? 'text-warn' : 'text-faint')}>{dirty ? 'Unsaved changes' : 'Saved locally'}</span>
       </div>
 
       <nav className="mx-auto flex items-center rounded-[3px] border border-line bg-panel p-[2px]" aria-label="Application mode">

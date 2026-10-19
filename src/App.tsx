@@ -21,6 +21,7 @@ import { AnchorLayer } from '@/ui/plan/AnchorLayer';
 import { useAnalysisOverlay } from '@/ui/plan/AnalysisStack';
 import { useRoomChoropleth } from '@/ui/analyze/shared';
 import { Timeline } from '@/ui/Timeline';
+import { PresentOverlay } from '@/ui/PresentOverlay';
 import { usePlayback, clock } from '@/store/playback';
 import { getActiveDataset, useData } from '@/store/dataStore';
 import { positionAt, indexAtOrBefore } from '@/analytics/trackUtils';
@@ -172,13 +173,15 @@ function Workspace({ dialogs }: { dialogs: { settings: boolean; exp: boolean; ne
             roomFill={mode === 'plan' ? null : roomFill}
             hud={
               <>
-                <ToolPalette />
+                {present ? <PresentOverlay /> : <ToolPalette />}
                 <ZoomControls />
                 <ScaleBar />
                 {overlay.legends}
-                <div className="pointer-events-none absolute top-3 right-3 z-10">
-                  <DatasetBadge />
-                </div>
+                {!present && (
+                  <div className="pointer-events-none absolute top-3 right-3 z-10">
+                    <DatasetBadge />
+                  </div>
+                )}
               </>
             }
           />

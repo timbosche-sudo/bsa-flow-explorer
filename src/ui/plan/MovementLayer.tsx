@@ -158,6 +158,9 @@ export function MovementLayer() {
       // --- Markers --------------------------------------------------------------
       if (!s.layers.staff.visible) return;
       const R = 5.5 * dpr;
+      // Label boxes already drawn this frame (simple collision avoidance).
+      const placed: [number, number, number, number][] = [];
+      const free = (x: number, y: number, w: number, h: number) => !placed.some(([a, b, c, d]) => x < a + c && a < x + w && y < b + d && b < y + h);
       const ordered = [...s.ds.tracks].sort((a, b) => emphasis(a) - emphasis(b));
       for (const tr of ordered) {
         const pos = positionAt(tr, t, hints.current.get(tr.staffId) ?? -1);
@@ -232,8 +235,14 @@ export function MovementLayer() {
           const label = code.get(tr.staffId) ?? tr.staffId;
           g.font = `600 ${(sel ? 11 : 9.5) * dpr}px Inter Variable, sans-serif`;
           const w = g.measureText(label).width;
+          const h = 11 * dpr;
           const lx = sx - w / 2;
-          const ly = sy - R - 6 * dpr;
+          let ly = sy - R - 6 * dpr;
+          if (!free(lx, ly - h, w, h)) {
+            ly = sy + R + 14 * dpr; // try below the marker
+            if (!free(lx, ly - h, w, h) && !sel) continue;
+          }
+          placed.push([lx, ly - h, w, h]);
           g.lineWidth = 3 * dpr;
           g.strokeStyle = 'rgba(255,255,255,0.92)';
           g.strokeText(label, lx, ly);
