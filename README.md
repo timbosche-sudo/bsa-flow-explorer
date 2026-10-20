@@ -6,6 +6,13 @@ BSA Flow Explorer is a local-first browser application for studying how healthca
 
 > On first launch the app opens a fictional sample clinic with ten simulated staff. Everything derived from it is labelled **SIMULATED DATA — DEMONSTRATION ONLY**. Simulated movement is a hypothetical model, not measured evidence.
 
+## Live preview
+
+The `main` branch deploys automatically to GitHub Pages:
+**https://timbosche-sudo.github.io/bsa-flow-explorer/**
+
+(Workflow: `.github/workflows/deploy-pages.yml`. Production builds use the base path `/bsa-flow-explorer/`; set `BASE_PATH=/` to build for a different host.)
+
 ## Quick start
 
 Requires Node.js 20+ (developed on Node 22).
@@ -15,7 +22,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm test           # unit tests (vitest)
 npm run build      # production build in dist/
-npm run preview    # serve the production build
+BASE_PATH=/bsa-flow-explorer/ npm run preview   # serve the production build at its Pages path
 ```
 
 After installation no internet connection is required. Fonts and libraries are bundled, and the app makes no external requests involving project or location data. There is no telemetry.
